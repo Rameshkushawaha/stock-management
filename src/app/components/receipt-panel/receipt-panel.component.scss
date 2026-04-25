@@ -1,0 +1,136 @@
+.receipt-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: stretch; justify-content: flex-end;
+  background: rgba(0,0,0,0.5);
+  animation: overlayIn 0.2s ease;
+}
+
+.receipt-panel {
+  width: 360px; max-width: 95vw;
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  animation: slideFromRight 0.3s cubic-bezier(0.16,1,0.3,1);
+  overflow-y: auto;
+}
+
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+
+  h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0; }
+}
+
+.close-btn {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  padding: 4px; border-radius: 6px; transition: all 0.15s;
+  svg { width: 18px; height: 18px; }
+  &:hover { background: var(--bg-hover); color: var(--text-primary); }
+}
+
+// ─── Receipt (thermal style) ──────────────────────────────────────────────────
+.receipt {
+  flex: 1; padding: 20px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px; color: #e2e8f0;
+  background: #0f111a;
+
+  &__store { text-align: center; margin-bottom: 8px; }
+  &__logo { font-size: 28px; margin-bottom: 4px; }
+  &__store-name { font-size: 16px; font-weight: 700; letter-spacing: 0.1em; }
+  &__store-addr { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+
+  &__divider { color: #334155; margin: 8px 0; font-size: 11px; text-align: center; letter-spacing: 1px; }
+
+  &__meta { display: flex; flex-direction: column; gap: 3px; }
+  &__meta-row {
+    display: flex; justify-content: space-between;
+    font-size: 11px;
+    span:first-child { color: #64748b; }
+    span:last-child { color: #e2e8f0; font-weight: 500; }
+  }
+
+  &__items-head {
+    display: grid; grid-template-columns: 1fr 30px 60px 60px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    color: #64748b; margin-bottom: 4px;
+  }
+
+  &__item { margin-bottom: 8px; }
+  &__item-name { font-size: 12px; font-weight: 600; color: #f1f5f9; margin-bottom: 2px; }
+  &__item-row {
+    display: grid; grid-template-columns: 1fr 30px 60px 60px;
+    font-size: 10px; color: #94a3b8;
+  }
+
+  &__totals { display: flex; flex-direction: column; gap: 4px; }
+  &__total-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px;
+    span:last-child { font-weight: 600; }
+    &--grand {
+      font-size: 16px; font-weight: 700;
+      color: #f1f5f9;
+      span:last-child { color: #4ade80; }
+    }
+  }
+
+  &__barcode {
+    text-align: center; margin: 12px 0 8px;
+    .barcode-lines { display: flex; align-items: center; justify-content: center; }
+  }
+  &__barcode-num { font-size: 9px; color: #64748b; margin-top: 4px; letter-spacing: 0.1em; }
+
+  &__footer {
+    text-align: center; font-size: 10px; color: #64748b;
+    p { margin: 2px 0; }
+  }
+}
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+.panel-actions {
+  padding: 16px 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; flex-shrink: 0;
+}
+
+.action-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 16px; border-radius: 10px; border: none;
+  font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  svg { width: 16px; height: 16px; }
+
+  &--print { background: #3b82f6; color: #fff; &:hover { background: #2563eb; } }
+  &--new   { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); &:hover { background: var(--bg-base); } }
+}
+
+// ─── Animations ───────────────────────────────────────────────────────────────
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideFromRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+// ─── PRINT STYLES ─────────────────────────────────────────────────────────────
+@media print {
+  // Hide everything except the receipt
+  body > * { display: none !important; }
+  app-root { display: block !important; }
+  .receipt-overlay { position: static !important; background: none !important; display: block !important; }
+  .receipt-panel { width: 100% !important; border: none !important; animation: none !important; }
+  .panel-header, .panel-actions { display: none !important; }
+  .receipt-panel > * { display: none !important; }
+  #printable-receipt {
+    display: block !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 12pt !important;
+    color: #000 !important;
+    background: #fff !important;
+    padding: 10mm !important;
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+  }
+  #printable-receipt * {
+    color: #000 !important;
+    background: transparent !important;
+  }
+  #printable-receipt .receipt__divider { color: #000 !important; }
+  #printable-receipt .receipt__total-row--grand span:last-child { color: #000 !important; font-weight: 900 !important; }
+}

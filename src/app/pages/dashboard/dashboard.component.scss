@@ -1,0 +1,178 @@
+.dashboard { max-width: 1400px; }
+
+.page-head {
+  margin-bottom: 24px;
+  .page-title { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+  .page-sub { font-size: 13px; color: var(--text-muted); margin: 0; }
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px;
+  display: flex; align-items: flex-start; gap: 14px;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+  &__icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+    &--blue   { background: rgba(59,130,246,0.15); }
+    &--yellow { background: rgba(234,179,8,0.15); }
+    &--purple { background: rgba(139,92,246,0.15); }
+    &--red    { background: rgba(239,68,68,0.15); }
+  }
+
+  &__body { display: flex; flex-direction: column; gap: 3px; }
+
+  &__label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+  &__value { font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1.2; letter-spacing: -0.02em; }
+
+  &__sub { font-size: 12px; font-weight: 500;
+    &--green { color: #4ade80; }
+    &--red   { color: #f87171; }
+  }
+}
+
+// ─── Section Card ─────────────────────────────────────────────────────────────
+.section-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; margin-bottom: 20px;
+
+  &__head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; gap: 12px; flex-wrap: wrap;
+
+    h2 {
+      font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0;
+      display: flex; align-items: center; gap: 8px;
+      .icon { font-size: 18px; }
+    }
+  }
+}
+
+// ─── Mode Pills ───────────────────────────────────────────────────────────────
+.mode-pills { display: flex; gap: 6px; }
+
+.mode-pill {
+  padding: 6px 16px; border-radius: 8px; border: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  background: var(--bg-base); color: var(--text-secondary);
+  transition: all 0.15s;
+
+  &.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+  &--green.active { background: #22c55e; border-color: #22c55e; }
+}
+
+// ─── Quick Scan ───────────────────────────────────────────────────────────────
+.quick-scan-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+
+.scan-input-wrap {
+  flex: 1; min-width: 220px;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-base); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0 14px;
+  transition: border-color 0.2s;
+
+  &:focus-within { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .scan-icon { width: 16px; height: 16px; color: var(--text-muted); flex-shrink: 0; }
+}
+
+.scan-input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text-primary); font-size: 14px; padding: 13px 0;
+  &::placeholder { color: var(--text-muted); }
+}
+
+.scan-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: #3b82f6; color: #fff; border: none;
+  padding: 11px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  &:hover { background: #2563eb; transform: translateY(-1px); }
+}
+
+.go-scanner-btn {
+  padding: 11px 16px; background: var(--bg-base);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: 13px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  white-space: nowrap;
+  &:hover { color: var(--text-primary); border-color: var(--text-muted); }
+}
+
+.scan-feedback {
+  margin-top: 10px; font-size: 13px; font-weight: 500; padding: 8px 12px; border-radius: 8px;
+  &--ok  { background: rgba(34,197,94,0.1); color: #4ade80; }
+  &--err { background: rgba(239,68,68,0.1); color: #f87171; }
+}
+
+// ─── Bottom Grid ──────────────────────────────────────────────────────────────
+.bottom-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+
+  .section-card { margin-bottom: 0; }
+}
+
+// ─── Table ────────────────────────────────────────────────────────────────────
+.data-table {
+  width: 100%; border-collapse: collapse;
+
+  thead th {
+    text-align: left; padding: 8px 12px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--text-muted); border-bottom: 1px solid var(--border);
+  }
+
+  tbody td {
+    padding: 10px 12px; font-size: 13.5px; color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    &:last-child { border-bottom: none; }
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--bg-hover); }
+}
+
+.product-name-cell { display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-weight: 500; }
+
+.dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  &--blue { background: #3b82f6; }
+  &--red  { background: #ef4444; }
+}
+
+.bold { font-weight: 600; color: var(--text-primary); }
+.muted { color: var(--text-muted); }
+.empty-cell { text-align: center; padding: 32px !important; color: var(--text-muted); font-size: 13px; }
+
+// ─── Demand Bar ───────────────────────────────────────────────────────────────
+.demand-bar-cell { display: flex; align-items: center; gap: 8px; }
+
+.demand-bar {
+  width: 80px; height: 6px; background: var(--bg-base);
+  border-radius: 3px; overflow: hidden; flex-shrink: 0;
+
+  &__fill { height: 100%; background: #ef4444; border-radius: 3px; }
+}
+
+.demand-pct { font-size: 12px; color: var(--text-muted); }
+
+// ─── Stock Pill ───────────────────────────────────────────────────────────────
+.stock-pill {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  &--ok    { background: rgba(34,197,94,0.15); color: #4ade80; }
+  &--low   { background: rgba(234,179,8,0.15); color: #facc15; }
+  &--empty { background: rgba(239,68,68,0.15); color: #f87171; }
+}

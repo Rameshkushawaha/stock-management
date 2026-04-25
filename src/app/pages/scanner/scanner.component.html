@@ -1,0 +1,235 @@
+<div class="scanner-page" [ngClass]="flashClass">
+
+  <!-- ── Left: Scan Column ─────────────────────────────────────────────────── -->
+  <div class="scan-col">
+
+    <!-- Header -->
+    <div class="scan-header">
+      <div class="scan-header__left">
+        <h1>{{ modeLabel }}</h1>
+        <span class="live-clock">{{ currentTime | date:'HH:mm:ss' }}</span>
+      </div>
+      <div class="scan-header__right">
+        <div class="scanner-pill" [class.scanner-pill--ready]="scannerReady" [class.scanner-pill--lost]="scannerFocusLost">
+          <span class="pill-dot"></span>
+          {{ scannerFocusLost ? 'TAP TO ACTIVATE' : 'SCANNER READY' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode toggle (admin / seller see both) -->
+    <div class="mode-toggle" *ngIf="auth.can('sell') && auth.can('add-stock')">
+      <button [class.active]="mode==='sell'" (click)="switchMode('sell')">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/></svg>
+        Sell / Cashier
+      </button>
+      <button [class.active]="mode==='add'" (click)="switchMode('add')">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+        Add Stock
+      </button>
+    </div>
+
+    <!-- Scanner Zone -->
+    <div class="scan-zone"
+         [class.scan-zone--ready]="scannerReady"
+         [class.scan-zone--scanning]="scanLineActive"
+         [class.scan-zone--lost]="scannerFocusLost"
+         (click)="focusInput(); $event.stopPropagation()">
+
+      <!-- Animated beam -->
+      <div class="scan-beam" *ngIf="scanLineActive"></div>
+
+      <!-- Corner brackets -->
+      <span class="corner corner--tl"></span>
+      <span class="corner corner--tr"></span>
+      <span class="corner corner--bl"></span>
+      <span class="corner corner--br"></span>
+
+      <!-- Focus lost overlay -->
+      <div class="focus-overlay" *ngIf="scannerFocusLost" (click)="focusInput()">
+        <div class="focus-overlay__icon">📡</div>
+        <p class="focus-overlay__title">TAP TO ACTIVATE SCANNER</p>
+        <p class="focus-overlay__sub">Connect USB / Bluetooth scanner and tap here to resume</p>
+      </div>
+
+      <!-- Input row -->
+      <div class="scan-input-row">
+        <svg class="scan-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 010 2H5v2a1 1 0 01-2 0V4zm9-1a1 1 0 000 2h2v2a1 1 0 102 0V4a1 1 0 00-1-1h-3zM3 14a1 1 0 102 0v-2h2a1 1 0 100-2H4a1 1 0 00-1 1v3zm11 1a1 1 0 001-1v-3a1 1 0 00-1-1h-3a1 1 0 100 2h2v2a1 1 0 001 1z" clip-rule="evenodd"/>
+        </svg>
+        <input
+          #barcodeInput
+          type="text"
+          class="scan-input"
+          [(ngModel)]="barcodeValue"
+          (keyup.enter)="onSubmit()"
+          (focus)="onInputFocus()"
+          (blur)="onInputBlur()"
+          [placeholder]="mode === 'sell' ? 'Scan barcode to add to cart…' : 'Scan barcode to add stock…'"
+          autocomplete="off" autocorrect="off" autocapitalize="off"
+          spellcheck="false" inputmode="none"
+        />
+        <button class="process-btn" (click)="onSubmit(); $event.stopPropagation()">SCAN</button>
+      </div>
+
+      <div class="scan-hint">
+        <span>🔌 USB/Bluetooth scanner auto-submits</span>
+        <span class="hint-sep">·</span>
+        <span><kbd>Enter</kbd> to submit manually</span>
+        <span class="hint-sep">·</span>
+        <button class="camera-toggle-btn" (click)="toggleCamera(); $event.stopPropagation()">
+          📷 {{ showCamera ? 'Stop Camera' : 'Use Camera' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Camera view -->
+    <div class="camera-box" *ngIf="showCamera">
+      <div class="camera-box__head">
+        <span>📷 Camera Scanner</span>
+        <button (click)="stopCamera()">✕ Close</button>
+      </div>
+      <div class="camera-box__video-wrap">
+        <video #videoEl autoplay playsinline muted class="camera-video"></video>
+        <div class="camera-overlay">
+          <div class="camera-frame"></div>
+          <p>Aim camera at barcode</p>
+        </div>
+      </div>
+      <div class="camera-manual">
+        <p>If auto-detect fails, type barcode below:</p>
+        <div class="camera-input-row">
+          <input type="text" #cameraInput placeholder="Type barcode manually…" (keyup.enter)="onCameraBarcode(cameraInput.value); cameraInput.value=''" />
+          <button (click)="onCameraBarcode(cameraInput.value); cameraInput.value=''">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback-row">
+      <div class="feedback-msg feedback-msg--ok" *ngIf="lastMessage">
+        <span class="feedback-msg__icon">✓</span>{{ lastMessage }}
+      </div>
+      <div class="feedback-msg feedback-msg--err" *ngIf="lastError">
+        <span class="feedback-msg__icon">✗</span>{{ lastError }}
+      </div>
+      <div class="feedback-msg feedback-msg--warn" *ngIf="isLowStock && lastMessage">
+        ⚠ Low stock alert on last scanned item
+      </div>
+    </div>
+
+    <!-- Add-mode: recent adds info -->
+    <div class="add-info" *ngIf="mode === 'add' && lastScannedProduct">
+      <div class="add-info__label">LAST ADDED</div>
+      <div class="add-info__name">{{ lastScannedProduct.productName }}</div>
+      <div class="add-info__barcode">{{ lastScannedProduct.barcodeId }}</div>
+    </div>
+
+    <!-- USB scanner guide -->
+    <div class="usb-guide">
+      <div class="usb-guide__title">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1v-2H2a1 1 0 110-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"/></svg>
+        USB/Bluetooth Scanner Setup
+      </div>
+      <div class="usb-guide__steps">
+        <span>① Connect scanner via USB or Bluetooth</span>
+        <span>② Tap the scan zone above to activate</span>
+        <span>③ Aim scanner at barcode — it auto-submits</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: Cart / Add Summary Column ──────────────────────────────────── -->
+  <div class="cart-col" *ngIf="mode === 'sell'">
+    <div class="cart-header">
+      <h2>Current Cart <span class="cart-count">{{ cartCount }} items</span></h2>
+      <button class="clear-btn" (click)="clearCart()" *ngIf="cartItems.length > 0">Clear</button>
+    </div>
+
+    <!-- Empty cart -->
+    <div class="cart-empty" *ngIf="cartItems.length === 0">
+      <div class="cart-empty__icon">🛒</div>
+      <p>Cart is empty</p>
+      <p class="cart-empty__sub">Scan a product to add it</p>
+    </div>
+
+    <!-- Cart Items -->
+    <div class="cart-items" *ngIf="cartItems.length > 0">
+      <div *ngFor="let item of cartItems" class="cart-item">
+        <div class="cart-item__info">
+          <span class="cart-item__name">{{ item.productName }}</span>
+          <span class="cart-item__barcode">{{ item.barcodeId }}</span>
+        </div>
+        <div class="cart-item__qty-price">
+          <span class="cart-item__qty">× {{ item.quantity }}</span>
+          <span class="cart-item__price">{{ formatPrice(item.total) }}</span>
+        </div>
+        <button class="cart-item__remove" (click)="removeFromCart(item.barcodeId)">✕</button>
+      </div>
+    </div>
+
+    <!-- Cart Footer -->
+    <div class="cart-footer" *ngIf="cartItems.length > 0">
+      <div class="cart-subtotal">
+        <span>Subtotal ({{ cartCount }} items)</span>
+        <span>{{ formatPrice(cartTotal) }}</span>
+      </div>
+      <div class="cart-subtotal cart-subtotal--tax">
+        <span>GST (18%)</span>
+        <span>{{ formatPrice(cartTotal * 0.18) }}</span>
+      </div>
+      <div class="cart-total">
+        <span>TOTAL</span>
+        <span>{{ formatPrice(cartTotal * 1.18) }}</span>
+      </div>
+
+      <!-- Payment method -->
+      <div class="payment-row">
+        <span class="payment-label">Payment</span>
+        <div class="payment-pills">
+          <button *ngFor="let m of paymentMethods"
+                  class="payment-pill"
+                  [class.active]="paymentMethod === m"
+                  (click)="paymentMethod = m">{{ m }}</button>
+        </div>
+      </div>
+
+      <button class="checkout-btn" (click)="checkout()">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0v3H7V4h6zm-5 7a1 1 0 100 2h4a1 1 0 100-2H8z" clip-rule="evenodd"/></svg>
+        Checkout & Print Receipt
+      </button>
+    </div>
+  </div>
+
+  <!-- Add-mode right panel -->
+  <div class="cart-col cart-col--add" *ngIf="mode === 'add'">
+    <div class="add-instructions">
+      <div class="add-instructions__icon">📦</div>
+      <h2>Stock Add Mode</h2>
+      <p>Scan any barcode to increment stock by 1.</p>
+      <p>If the product is new, you will be prompted to register it.</p>
+      <ul>
+        <li>🔌 USB/Bluetooth scanner works automatically</li>
+        <li>📷 Tap "Use Camera" for mobile scanning</li>
+        <li>⌨️ Type barcode manually and press Enter</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- New Product Modal -->
+<app-new-product-modal
+  *ngIf="showNewProductModal"
+  [barcodeId]="pendingBarcode"
+  (saved)="onNewProductSaved($event)"
+  (cancelled)="onNewProductCancelled()">
+</app-new-product-modal>
+
+<!-- Receipt Side Panel -->
+<app-receipt-panel
+  *ngIf="showReceipt && completedReceipt"
+  [receipt]="completedReceipt"
+  (closed)="onReceiptClosed()"
+  (newSale)="onNewSale()">
+</app-receipt-panel>

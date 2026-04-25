@@ -1,0 +1,27 @@
+# Dependency directories
+node_modules/
+
+# Angular cache and build folders
+.angular/
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+
+# 1. Initialize git in this folder (if not already done)
+git init
+
+# 2. Add only the files that AREN'T ignored
+git add .
+
+# 3. Check the status
+git status

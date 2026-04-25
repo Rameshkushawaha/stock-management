@@ -1,0 +1,38 @@
+<div class="page">
+  <div class="page-head"><h1>💰 Sales Log</h1><p>All outbound transactions</p></div>
+  <div class="card">
+   <table class="data-table">
+  <thead>
+    <tr>
+      <th>PRODUCT</th>
+      <th>INVOICE</th>
+      <th>QTY</th>
+      <th>UNIT PRICE</th>
+      <th>TOTAL</th>
+      <th>DATE & TIME</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of salesLog">
+      <td>
+        <div class="product-cell">
+          <span class="dot dot--blue"></span>
+          <div class="name-stack">
+            <span class="main-name">{{ item.productName }}</span>
+            <span class="sub-text">To: {{ item.customer }}</span>
+          </div>
+        </div>
+      </td>
+      <td><span class="invoice-tag">{{ item.invoiceNo }}</span></td>
+      <td>{{ item.qty }}</td>
+      <td>₹{{ item.unitPrice | number }}</td>
+      <td class="bold">₹{{ item.lineTotal | number }}</td>
+      <td class="muted">
+        {{ item.date | date:'dd MMM' }} <br>
+        <small>{{ item.date | date:'shortTime' }}</small>
+      </td>
+    </tr>
+  </tbody>
+</table>
+  </div>
+</div>

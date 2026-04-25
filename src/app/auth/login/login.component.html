@@ -1,0 +1,80 @@
+<div class="login-shell">
+  <div class="login-bg">
+    <div class="bg-orb bg-orb--1"></div>
+    <div class="bg-orb bg-orb--2"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <div class="login-panel">
+    <!-- Brand -->
+    <div class="brand">
+      <div class="brand__logo">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#3b82f6"/>
+          <path d="M8 11h16M8 16h16M8 21h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <rect x="20" y="18" width="6" height="6" rx="1" fill="#fff" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="brand__text">
+        <span class="brand__name">StockSys</span>
+        <span class="brand__tagline">Inventory Management</span>
+      </div>
+    </div>
+
+    <!-- Role Selection -->
+    <div class="step step--roles" *ngIf="!selectedRole">
+      <h2 class="step__title">Select your role</h2>
+      <p class="step__sub">Choose how you'll be using the system today</p>
+      <div class="roles-grid">
+        <button *ngFor="let r of roles" class="role-card" [ngClass]="r.color" (click)="selectRole(r.role)">
+          <span class="role-card__icon">{{ r.icon }}</span>
+          <span class="role-card__label">{{ r.label }}</span>
+          <span class="role-card__desc">{{ r.description }}</span>
+          <span class="role-card__hint">PIN: {{ r.defaultPin }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PIN Entry -->
+    <div class="step step--pin" *ngIf="selectedRole">
+      <button class="back-btn" (click)="back()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Back
+      </button>
+
+      <div class="pin-header">
+        <span class="pin-header__icon">{{ selectedCard?.icon }}</span>
+        <div>
+          <h2 class="pin-header__role">{{ selectedCard?.label }}</h2>
+          <p class="pin-header__sub">Enter your 4-digit PIN</p>
+        </div>
+      </div>
+
+      <!-- PIN dots -->
+      <div class="pin-dots">
+        <div *ngFor="let i of pinDots" class="pin-dot" [class.filled]="pin.length > i" [class.active]="pin.length === i"></div>
+      </div>
+
+      <!-- Error -->
+      <div class="pin-error" *ngIf="error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ error }}
+      </div>
+
+      <!-- Numpad -->
+      <div class="numpad">
+        <button *ngFor="let d of ['1','2','3','4','5','6','7','8','9']" class="numpad-key" (click)="onPinKey(d)" [disabled]="loading">{{ d }}</button>
+        <button class="numpad-key numpad-key--blank" disabled></button>
+        <button class="numpad-key" (click)="onPinKey('0')" [disabled]="loading">0</button>
+        <button class="numpad-key numpad-key--back" (click)="onPinBackspace()" [disabled]="loading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2zM18 9l-6 6M12 9l6 6"/></svg>
+        </button>
+      </div>
+
+      <div class="login-loading" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Signing in…</span>
+      </div>
+    </div>
+  </div>
+</div>

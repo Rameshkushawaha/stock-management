@@ -1,0 +1,19 @@
+@use '../../shared-page' as *;
+
+.alert-chip { background:rgba(239,68,68,.12); color:#f87171; border:1px solid rgba(239,68,68,.3); border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600; }
+.urg-badge { display:inline-flex; align-items:center; gap:5px; font-size:9px; font-weight:700; letter-spacing:.1em; padding:3px 8px; border-radius:4px; border:1px solid; }
+.urg-dot { width:6px; height:6px; border-radius:50%; }
+.urg-badge--critical { color:#ef4444; border-color:rgba(239,68,68,.4); background:rgba(239,68,68,.08); }
+.urg-badge--critical .urg-dot { background:#ef4444; }
+.urg-badge--high { color:#f97316; border-color:rgba(249,115,22,.4); background:rgba(249,115,22,.08); }
+.urg-badge--high .urg-dot { background:#f97316; }
+.urg-badge--medium { color:#facc15; border-color:rgba(234,179,8,.4); background:rgba(234,179,8,.08); }
+.urg-badge--medium .urg-dot { background:#facc15; }
+.text-critical { color:#ef4444 !important; }
+.text-high { color:#f97316 !important; }
+.text-medium { color:#facc15 !important; }
+.suggest { color:#4ade80; font-weight:600; font-size:13px; }
+.empty-state { display:flex; flex-direction:column; align-items:center; padding:60px 20px; gap:10px; }
+.empty-state .es-icon { font-size:48px; color:#4ade80; }
+.empty-state h3 { font-size:18px; font-weight:700; color:var(--text-primary); margin:0; }
+.empty-state p { color:var(--text-muted); font-size:13px; margin:0; }

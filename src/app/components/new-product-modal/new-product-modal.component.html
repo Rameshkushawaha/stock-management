@@ -1,0 +1,57 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <span class="modal-badge">NEW PRODUCT DETECTED</span>
+        <h2>Register Product</h2>
+      </div>
+      <button class="modal-close" (click)="cancel()">✕</button>
+    </div>
+
+    <div class="modal-barcode-row">
+      <span class="barcode-icon">▐▌▐▌▐▌▐▌</span>
+      <div><span class="bc-label">SCANNED BARCODE</span><span class="bc-val">{{ barcodeId }}</span></div>
+      <span class="unknown-tag">UNKNOWN</span>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field form-field--full">
+          <label>Product Name <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="form.productName" placeholder="e.g. Wireless Mouse" [class.err]="errors['name']" />
+          <span class="err-msg" *ngIf="errors['name']">{{ errors['name'] }}</span>
+        </div>
+        <div class="form-field">
+          <label>Category <span class="req">*</span></label>
+          <select [(ngModel)]="form.category" [class.err]="errors['cat']">
+            <option value="">Select…</option>
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+          <span class="err-msg" *ngIf="errors['cat']">{{ errors['cat'] }}</span>
+        </div>
+        <div class="form-field">
+          <label>Unit Price (₹) <span class="req">*</span></label>
+          <input type="number" [(ngModel)]="form.unitPrice" placeholder="0" min="0" [class.err]="errors['price']" />
+          <span class="err-msg" *ngIf="errors['price']">{{ errors['price'] }}</span>
+        </div>
+        <div class="form-field">
+          <label>Initial Stock Qty <span class="req">*</span></label>
+          <input type="number" [(ngModel)]="form.initialStock" placeholder="1" min="1" [class.err]="errors['qty']" />
+          <span class="err-msg" *ngIf="errors['qty']">{{ errors['qty'] }}</span>
+        </div>
+        <div class="form-field form-field--full">
+          <label>Description <span class="opt">(optional)</span></label>
+          <input type="text" [(ngModel)]="form.description" placeholder="Brief description…" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancel()">Cancel</button>
+      <button class="btn-save" (click)="save()">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        Register Product
+      </button>
+    </div>
+  </div>
+</div>

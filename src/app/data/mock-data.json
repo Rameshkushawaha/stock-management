@@ -1,0 +1,57 @@
+{
+  "users": [
+    { "id": 1, "name": "Admin User",    "role": "admin",       "pin": "1234", "avatar": "A" },
+    { "id": 2, "name": "Ravi Kumar",    "role": "stock-adder", "pin": "2222", "avatar": "R" },
+    { "id": 3, "name": "Priya Sharma",  "role": "seller",      "pin": "3333", "avatar": "P" }
+  ],
+  "products": [
+    { "productId": 1,  "barcodeId": "BC-001-ELC", "productName": "Wireless Headphones Pro",    "category": "Electronics", "unitPrice": 4999, "description": "Over-ear noise cancelling headphones" },
+    { "productId": 2,  "barcodeId": "BC-002-ELC", "productName": "USB-C Hub 7-Port",           "category": "Electronics", "unitPrice": 1299, "description": "7-port USB-C hub with power delivery" },
+    { "productId": 3,  "barcodeId": "BC-003-ELC", "productName": "Mechanical Keyboard TKL",    "category": "Electronics", "unitPrice": 3499, "description": "Tenkeyless mechanical keyboard, blue switches" },
+    { "productId": 4,  "barcodeId": "BC-004-GRC", "productName": "Organic Green Tea 200g",     "category": "Groceries",   "unitPrice": 349,  "description": "Premium Japanese green tea leaves" },
+    { "productId": 5,  "barcodeId": "BC-005-GRC", "productName": "Almond Butter 500g",         "category": "Groceries",   "unitPrice": 599,  "description": "Raw unsalted almond butter" },
+    { "productId": 6,  "barcodeId": "BC-006-STN", "productName": "A4 Notebook 200pg",          "category": "Stationery",  "unitPrice": 199,  "description": "Ruled A4 notebook, 200 pages" },
+    { "productId": 7,  "barcodeId": "BC-007-STN", "productName": "Premium Ballpen Set 12pc",   "category": "Stationery",  "unitPrice": 299,  "description": "12-piece ballpen set, assorted colors" },
+    { "productId": 8,  "barcodeId": "BC-008-ELC", "productName": "LED Desk Lamp",              "category": "Electronics", "unitPrice": 899,  "description": "Touch-controlled LED desk lamp, 3 modes" },
+    { "productId": 9,  "barcodeId": "BC-009-GRC", "productName": "Mixed Nuts 300g",            "category": "Groceries",   "unitPrice": 449,  "description": "Premium roasted mixed nuts" },
+    { "productId": 10, "barcodeId": "BC-010-CLN", "productName": "Hand Sanitizer 500ml",       "category": "Cleaning",    "unitPrice": 149,  "description": "70% alcohol hand sanitizer" },
+    { "productId": 11, "barcodeId": "BC-011-CLN", "productName": "Surface Disinfectant 1L",    "category": "Cleaning",    "unitPrice": 259,  "description": "Multi-surface antibacterial spray" },
+    { "productId": 12, "barcodeId": "BC-012-ELC", "productName": "Portable Power Bank 20000mAh","category": "Electronics","unitPrice": 1999, "description": "Fast-charge power bank, dual USB" }
+  ],
+  "inventory": [
+    { "inventoryId": 1,  "productId": 1,  "currentStock": 45, "lastUpdated": "2026-04-12T09:30:00" },
+    { "inventoryId": 2,  "productId": 2,  "currentStock": 7,  "lastUpdated": "2026-04-12T14:15:00" },
+    { "inventoryId": 3,  "productId": 3,  "currentStock": 23, "lastUpdated": "2026-04-11T11:00:00" },
+    { "inventoryId": 4,  "productId": 4,  "currentStock": 3,  "lastUpdated": "2026-04-13T08:00:00" },
+    { "inventoryId": 5,  "productId": 5,  "currentStock": 18, "lastUpdated": "2026-04-10T16:45:00" },
+    { "inventoryId": 6,  "productId": 6,  "currentStock": 9,  "lastUpdated": "2026-04-12T10:20:00" },
+    { "inventoryId": 7,  "productId": 7,  "currentStock": 62, "lastUpdated": "2026-04-11T09:00:00" },
+    { "inventoryId": 8,  "productId": 8,  "currentStock": 14, "lastUpdated": "2026-04-13T07:30:00" },
+    { "inventoryId": 9,  "productId": 9,  "currentStock": 5,  "lastUpdated": "2026-04-12T12:00:00" },
+    { "inventoryId": 10, "productId": 10, "currentStock": 2,  "lastUpdated": "2026-04-13T06:00:00" },
+    { "inventoryId": 11, "productId": 11, "currentStock": 31, "lastUpdated": "2026-04-10T14:00:00" },
+    { "inventoryId": 12, "productId": 12, "currentStock": 8,  "lastUpdated": "2026-04-13T10:00:00" }
+  ],
+  "transactions": [
+    { "transactionId": 1,  "productId": 1,  "transactionType": "Inbound",  "quantity": 50, "timestamp": "2026-03-15T09:00:00", "operatorId": 2 },
+    { "transactionId": 2,  "productId": 1,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-03-18T11:00:00", "operatorId": 3 },
+    { "transactionId": 3,  "productId": 1,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-13T10:15:00", "operatorId": 3 },
+    { "transactionId": 4,  "productId": 2,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-13T09:30:00", "operatorId": 3 },
+    { "transactionId": 5,  "productId": 3,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-13T08:45:00", "operatorId": 3 },
+    { "transactionId": 6,  "productId": 4,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-13T11:00:00", "operatorId": 3 },
+    { "transactionId": 7,  "productId": 5,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-12T14:00:00", "operatorId": 3 },
+    { "transactionId": 8,  "productId": 6,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-12T13:00:00", "operatorId": 3 },
+    { "transactionId": 9,  "productId": 7,  "transactionType": "Outbound", "quantity": 2,  "timestamp": "2026-04-11T16:00:00", "operatorId": 3 },
+    { "transactionId": 10, "productId": 8,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-11T15:00:00", "operatorId": 3 },
+    { "transactionId": 11, "productId": 9,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-10T12:00:00", "operatorId": 3 },
+    { "transactionId": 12, "productId": 10, "transactionType": "Outbound", "quantity": 3,  "timestamp": "2026-04-10T11:00:00", "operatorId": 3 },
+    { "transactionId": 13, "productId": 1,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-09T10:00:00", "operatorId": 3 },
+    { "transactionId": 14, "productId": 3,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-09T09:30:00", "operatorId": 3 },
+    { "transactionId": 15, "productId": 12, "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-08T14:00:00", "operatorId": 3 },
+    { "transactionId": 16, "productId": 7,  "transactionType": "Outbound", "quantity": 3,  "timestamp": "2026-04-08T13:00:00", "operatorId": 3 },
+    { "transactionId": 17, "productId": 8,  "transactionType": "Outbound", "quantity": 2,  "timestamp": "2026-04-07T11:00:00", "operatorId": 3 },
+    { "transactionId": 18, "productId": 4,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-07T10:30:00", "operatorId": 3 },
+    { "transactionId": 19, "productId": 5,  "transactionType": "Outbound", "quantity": 2,  "timestamp": "2026-04-06T15:00:00", "operatorId": 3 },
+    { "transactionId": 20, "productId": 2,  "transactionType": "Outbound", "quantity": 1,  "timestamp": "2026-04-06T14:00:00", "operatorId": 3 }
+  ]
+}

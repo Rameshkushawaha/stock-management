@@ -1,0 +1,32 @@
+<div class="page">
+  <div class="page-head">
+    <div><h1>🔥 High Demand</h1><p>Products ranked by sales velocity</p></div>
+    <div class="day-tabs">
+      <button *ngFor="let d of dayOpts" [class.active]="days===d" (click)="days=d; load()">{{d}}D</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="empty-state" *ngIf="items.length===0">
+      <span class="es-icon">📊</span><h3>No sales data</h3><p>No outbound transactions in this period.</p>
+    </div>
+    <table class="table" *ngIf="items.length>0">
+      <thead><tr><th>RANK</th><th>PRODUCT</th><th>Category</th><th>UNITS SOLD</th><th>DEMAND</th><th>STOCK LEFT</th><th>EST. REVENUE</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let p of items; let i=index" [class.row-top]="i<3">
+          <td><span class="rank" [class.rank--gold]="i===0" [class.rank--silver]="i===1" [class.rank--bronze]="i===2">#{{i+1}}</span></td>
+          <td><div class="prod-cell"><span class="prod-name">{{p.name}}</span><span class="prod-desc mono">{{p.barcodeId}}</span></div></td>
+          <td><span class="prod-cat">{{p.category}}</span></td>
+          <td class="bold">{{p.unitsSold}}</td>
+          <td>
+            <div class="dem-bar-wrap">
+              <div class="dem-bar"><div class="dem-bar__fill" [style.width.%]="p.demandPercent"></div></div>
+              <span class="dem-pct">{{p.demandPercent}}%</span>
+            </div>
+          </td>
+          <td><span class="stock-pill" [class.ok]="p.currentStock>=10" [class.low]="p.currentStock<10&&p.currentStock>0" [class.empty]="p.currentStock===0">{{p.currentStock===0?'Out':p.currentStock>=10?'In Stock':'Low: '+p.currentStock}}</span></td>
+          <td class="price">{{fmt(p.revenue)}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

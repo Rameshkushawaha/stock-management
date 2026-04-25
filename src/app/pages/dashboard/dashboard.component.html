@@ -1,0 +1,188 @@
+<div class="dashboard">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub">Overview of your inventory and sales performance</p>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--blue">📦</div>
+      <div class="stat-card__body">
+        <span class="stat-card__label">Total Products</span>
+        <span class="stat-card__value">{{ stats.totalProducts }}</span>
+        <span class="stat-card__sub stat-card__sub--green">{{ stats.totalStockUnits }} units in stock</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--yellow">💰</div>
+      <div class="stat-card__body">
+        <span class="stat-card__label">Total Revenue</span>
+        <span class="stat-card__value">{{ formattedRevenue }}</span>
+        <span class="stat-card__sub stat-card__sub--green">{{ stats.totalSalesCount }} total sales</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--purple">📊</div>
+      <div class="stat-card__body">
+        <span class="stat-card__label">Today's Sales</span>
+        <span class="stat-card__value">{{ stats.todaySales }}</span>
+        <span class="stat-card__sub stat-card__sub--green">{{ formattedTodayRevenue }} revenue</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--red">⚠️</div>
+      <div class="stat-card__body">
+        <span class="stat-card__label">Low Stock Alerts</span>
+        <span class="stat-card__value">{{ stats.lowStockCount }}</span>
+        <span class="stat-card__sub stat-card__sub--red" *ngIf="stats.lowStockCount > 0">Needs attention</span>
+        <span class="stat-card__sub stat-card__sub--green" *ngIf="stats.lowStockCount === 0">All stocked up</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Scan -->
+  <div class="section-card" *ngIf="auth.can('sell') || auth.can('add-stock')">
+    <div class="section-card__head">
+      <h2><span class="icon">⚡</span> Quick Scan</h2>
+      <div class="mode-pills">
+        <button class="mode-pill" [class.active]="quickScanMode === 'sell'" (click)="quickScanMode = 'sell'"
+          *ngIf="auth.can('sell')">Sell</button>
+        <button class="mode-pill mode-pill--green" [class.active]="quickScanMode === 'add'"
+          (click)="quickScanMode = 'add'" *ngIf="auth.can('add-stock')">Add Stock</button>
+      </div>
+    </div>
+    <div class="quick-scan-row">
+      <div class="scan-input-wrap">
+        <svg class="scan-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+            clip-rule="evenodd" />
+        </svg>
+        <input type="text" class="scan-input" [(ngModel)]="quickScanBarcode" (keyup.enter)="quickScan()"
+          placeholder="Scan barcode or type product name..." autocomplete="off" autofocus />
+      </div>
+      <button class="scan-btn" (click)="quickScan()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path fill-rule="evenodd"
+            d="M3 4a1 1 0 011-1h3a1 1 0 010 2H5v2a1 1 0 01-2 0V4zm9-1a1 1 0 000 2h2v2a1 1 0 102 0V4a1 1 0 00-1-1h-3zM3 14a1 1 0 102 0v-2h2a1 1 0 100-2H4a1 1 0 00-1 1v3zm11 1a1 1 0 001-1v-3a1 1 0 00-1-1h-3a1 1 0 100 2h2v2a1 1 0 001 1z"
+            clip-rule="evenodd" />
+        </svg>
+        Scan
+      </button>
+      <button class="go-scanner-btn" (click)="goToScanner()">Open Full Scanner →</button>
+    </div>
+    <div class="scan-feedback scan-feedback--ok" *ngIf="scanMessage">✓ {{ scanMessage }}</div>
+    <div class="scan-feedback scan-feedback--err" *ngIf="scanError">✗ {{ scanError }}</div>
+  </div>
+
+ 
+<!-- Recent Sales -->
+  <div class="bottom-grid">
+    <div class="section-card">
+  <div class="section-card__head">
+    <h2>Advanced Sales Preview</h2>
+  </div>
+  
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>INVOICE & DATE</th>
+        <th>SELLER / CUSTOMER</th>
+        <th>ITEMS DETAIL</th>
+        <th>PAYMENT</th>
+        <th>TOTAL</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let sale of recentSales">
+        <td>
+          <div class="bold">{{ sale.invoiceNo }}</div>
+          <div class="muted small">{{ sale.saleDate | date:'MMM d, h:mm a' }}</div>
+        </td>
+
+        <td>
+          <div class="user-cell">
+            <span class="small-label">By:</span> {{ sale.operator?.name }}
+          </div>
+          <div class="user-cell">
+            <span class="small-label">To:</span> 
+            <span [class.text-italic]="!sale.customer">{{ sale.customer?.name || 'Walk-in' }}</span>
+          </div>
+        </td>
+
+        <td>
+          <ul class="item-preview-list">
+            <li *ngFor="let item of sale.items">
+              <span class="qty-tag">{{ item.qty }}x</span> 
+              {{ item.productName }}
+              <span class="item-price"> ₹{{ item.rate }}</span>
+            </li>
+          </ul>
+        </td>
+
+        <td>
+          <span class="badge-payment" [ngClass]="'badge--' + sale.paymentMode.toLowerCase()">
+            {{ sale.paymentMode }}
+          </span>
+        </td>
+
+        <td class="text-right">
+          <div class="bold">₹{{ sale.grandTotal | number }}</div>
+          <div class="tax-info small text-muted">Incl. Tax: ₹{{ sale.taxAmount }}</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+  
+  <!-- Trending This Week -->
+  <div class="section-card">
+    <div class="section-card__head">
+      <h2>🔥 Trending This Week</h2>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>PRODUCT</th>
+          <th>UNITS SOLD (7D)</th>
+          <th>DEMAND</th>
+          <th>STOCK LEFT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of trending">
+          <td>
+            <div class="product-name-cell">
+              <span class="dot dot--red"></span>
+              {{ item.name }}
+            </div>
+          </td>
+          <td class="bold">{{ item.unitsSold }}</td>
+          <td>
+            <div class="demand-bar-cell">
+              <div class="demand-bar">
+                <div class="demand-bar__fill" [style.width.%]="item.demandPercent"></div>
+              </div>
+              <span class="demand-pct">{{ item.demandPercent }}%</span>
+            </div>
+          </td>
+          <td>
+            <span class="stock-pill" [class.stock-pill--ok]="item.currentStock >= 10"
+              [class.stock-pill--low]="item.currentStock < 10 && item.currentStock > 0"
+              [class.stock-pill--empty]="item.currentStock === 0">
+              {{ item.currentStock === 0 ? 'Out of Stock' : item.currentStock >= 10 ? 'In Stock' : 'Low: ' +
+              item.currentStock }}
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="trending.length === 0">
+          <td colspan="4" class="empty-cell">No sales in the last 7 days</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>

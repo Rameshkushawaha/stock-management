@@ -1,0 +1,25 @@
+<div class="page">
+  <div class="page-head">
+    <div><h1>Low Stock</h1><p>Items that need restocking</p></div>
+    <div class="alert-chip" *ngIf="items.length>0">⚠ {{ items.length }} items need attention</div>
+  </div>
+  <div class="card">
+    <div class="empty-state" *ngIf="items.length===0">
+      <span class="es-icon">✓</span><h3>All stocked up!</h3><p>No products below 10 units.</p>
+    </div>
+    <table class="table" *ngIf="items.length>0">
+      <thead><tr><th>URGENCY</th><th>PRODUCT</th><th>CATEGORY</th><th>PRICE</th><th>STOCK</th><th>SUGGESTED</th><th>LAST UPDATED</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let p of items" [class]="'row--'+urgency(p.currentStock)">
+          <td><span class="urg-badge" [class]="'urg-badge--'+urgency(p.currentStock)"><span class="urg-dot"></span>{{urgencyLabel(p.currentStock)}}</span></td>
+          <td><div class="prod-cell"><span class="prod-name">{{p.productName}}</span><span class="prod-desc mono">{{p.barcodeId}}</span></div></td>
+          <td><span class="cat-tag">{{p.category}}</span></td>
+          <td class="price">{{fmt(p.unitPrice)}}</td>
+          <td class="bold" [class]="'text-'+urgency(p.currentStock)">{{p.currentStock}}</td>
+          <td class="suggest">+{{suggested(p.currentStock)}} units</td>
+          <td class="muted">{{p.lastUpdated | date:'dd MMM, HH:mm'}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
