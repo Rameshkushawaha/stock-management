@@ -30,7 +30,6 @@ export class DashboardComponent implements OnInit {
     this.inventory.getRecentSales().subscribe({
       next: (sales: any[]) => {
         this.recentSales = sales;
-        console.log('Recent sales:', sales);
       },
       error: (err: any) => {
         console.error('Error fetching recent sales', err);

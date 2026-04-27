@@ -36,6 +36,21 @@ export class InventoryService {
     return product;
   }
 
+  getProducts(): Observable<any[]> {
+    const token = sessionStorage.getItem('stocksys_token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    return this.http.get<any>(`${this.API_URL}products`, { headers }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          // Returning the data array directly to the component
+          return response.data;
+        }
+        return [];
+      })
+    );
+  }
+
   // ─── Inventory ───────────────────────────────────────────────────────────────
   getInventory(productId: number): Inventory | undefined {
     return this.inventory.find(i => i.productId === productId);
@@ -144,49 +159,6 @@ export class InventoryService {
     return receipt;
   }
 
-  // ─── Reports ─────────────────────────────────────────────────────────────────
-  // getDemandReport(days = 30): DemandItem[] {
-  //   const since = new Date(); since.setDate(since.getDate() - days);
-  //   const counts: Record<number, number> = {};
-  //   this.transactions
-  //     .filter(t => t.transactionType === 'Outbound' && new Date(t.timestamp) >= since)
-  //     .forEach(t => counts[t.productId] = (counts[t.productId] ?? 0) + t.quantity);
-
-  //   const max = Math.max(...Object.values(counts), 1);
-  //   return this.getAllWithStock()
-  //     .filter(p => counts[p.productId])
-  //     .map(p => ({ ...p, outboundCount: counts[p.productId], demandPercent: Math.round((counts[p.productId] / max) * 100) }))
-  //     .sort((a, b) => b.outboundCount - a.outboundCount);
-  // }
-
-  // getDashboardStats(): DashboardStats {
-  //   const all = this.getAllWithStock();
-  //   const today = new Date().toDateString();
-  //   const todayTx = this.transactions.filter(t => t.transactionType === 'Outbound' && new Date(t.timestamp).toDateString() === today);
-  //   const allOutbound = this.transactions.filter(t => t.transactionType === 'Outbound');
-
-  //   const totalRevenue = allOutbound.reduce((s, t) => {
-  //     const p = this.getProductById(t.productId);
-  //     return s + (p ? p.unitPrice * t.quantity : 0);
-  //   }, 0);
-
-  //   const todayRevenue = todayTx.reduce((s, t) => {
-  //     const p = this.getProductById(t.productId);
-  //     return s + (p ? p.unitPrice * t.quantity : 0);
-  //   }, 0);
-
-  //   return {
-  //     totalProducts: all.length,
-  //     totalRevenue,
-  //     todaySales: todayTx.reduce((s, t) => s + t.quantity, 0),
-  //     todayRevenue,
-  //     lowStockCount: all.filter(p => p.currentStock < 10).length,
-  //     totalStockUnits: all.reduce((s, p) => s + p.currentStock, 0),
-  //     totalSalesCount: allOutbound.reduce((s, t) => s + t.quantity, 0),
-  //     totalStockValue: all.reduce((s, p) => s + p.currentStock * p.unitPrice, 0)
-  //   };
-  // }
-
   private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
@@ -218,13 +190,7 @@ export class InventoryService {
       })
     );
   }
-  // getRecentSales(limit = 20): Array<{ transaction: Transaction; product: Product }> {
-  //   return this.transactions
-  //     .filter(t => t.transactionType === 'Outbound')
-  //     .slice(-limit).reverse()
-  //     .map(t => ({ transaction: t, product: this.getProductById(t.productId)! }))
-  //     .filter(x => x.product);
-  // }
+ 
   getRecentSales(limit: number = 20): Observable<any[]> {
   const token = sessionStorage.getItem('stocksys_token');
   const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
