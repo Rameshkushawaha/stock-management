@@ -20,6 +20,7 @@
         <div class="nav-section-label">{{ section.label }}</div>
         <a *ngFor="let item of section.items"
            [routerLink]="item.path"
+           (click)="onNavClick()"
            class="nav-item"
            [class.nav-item--active]="isActive(item.path)">
           <span class="nav-item__icon">
@@ -50,13 +51,13 @@
       </button>
     </div>
   </aside>
-
+<div class="sidebar-backdrop" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
   <!-- Main -->
   <div class="main-wrap">
     <!-- Topbar -->
     <header class="topbar">
       <div class="topbar__left">
-        <button class="topbar__menu" (click)="sidebarOpen = !sidebarOpen">
+        <button class="topbar__menu" (click)="openSidebar()" title="Toggle menu">
           <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
         </button>
       </div>
