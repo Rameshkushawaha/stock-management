@@ -25,6 +25,7 @@ import { ReceiptPanelComponent } from './components/receipt-panel/receipt-panel.
 import { NewProductModalComponent } from './components/new-product-modal/new-product-modal.component';
 import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './auth/interceptors/auth.interceptor';
+import { ZXingScannerModule } from '@zxing/ngx-scanner';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import { authInterceptor } from './auth/interceptors/auth.interceptor';
     FormsModule,
     AppRoutingModule,
     HttpClientModule,
+    ZXingScannerModule,
   ],
   providers: [provideHttpClient(withInterceptors([authInterceptor]))],
   bootstrap: [AppComponent]

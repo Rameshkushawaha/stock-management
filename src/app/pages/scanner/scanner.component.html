@@ -10,7 +10,8 @@
         <span class="live-clock">{{ currentTime | date:'HH:mm:ss' }}</span>
       </div>
       <div class="scan-header__right">
-        <div class="scanner-pill" [class.scanner-pill--ready]="scannerReady" [class.scanner-pill--lost]="scannerFocusLost">
+        <div class="scanner-pill" [class.scanner-pill--ready]="scannerReady"
+          [class.scanner-pill--lost]="scannerFocusLost">
           <span class="pill-dot"></span>
           {{ scannerFocusLost ? 'TAP TO ACTIVATE' : 'SCANNER READY' }}
         </div>
@@ -20,21 +21,25 @@
     <!-- Mode toggle (admin / seller see both) -->
     <div class="mode-toggle" *ngIf="auth.can('sell') && auth.can('add-stock')">
       <button [class.active]="mode==='sell'" (click)="switchMode('sell')">
-        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/></svg>
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path
+            d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
+        </svg>
         Sell / Cashier
       </button>
       <button [class.active]="mode==='add'" (click)="switchMode('add')">
-        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+            clip-rule="evenodd" />
+        </svg>
         Add Stock
       </button>
     </div>
 
     <!-- Scanner Zone -->
-    <div class="scan-zone"
-         [class.scan-zone--ready]="scannerReady"
-         [class.scan-zone--scanning]="scanLineActive"
-         [class.scan-zone--lost]="scannerFocusLost"
-         (click)="focusInput(); $event.stopPropagation()">
+    <div class="scan-zone" [class.scan-zone--ready]="scannerReady" [class.scan-zone--scanning]="scanLineActive"
+      [class.scan-zone--lost]="scannerFocusLost" (click)="focusInput(); $event.stopPropagation()">
 
       <!-- Animated beam -->
       <div class="scan-beam" *ngIf="scanLineActive"></div>
@@ -55,20 +60,14 @@
       <!-- Input row -->
       <div class="scan-input-row">
         <svg class="scan-icon" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 010 2H5v2a1 1 0 01-2 0V4zm9-1a1 1 0 000 2h2v2a1 1 0 102 0V4a1 1 0 00-1-1h-3zM3 14a1 1 0 102 0v-2h2a1 1 0 100-2H4a1 1 0 00-1 1v3zm11 1a1 1 0 001-1v-3a1 1 0 00-1-1h-3a1 1 0 100 2h2v2a1 1 0 001 1z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd"
+            d="M3 4a1 1 0 011-1h3a1 1 0 010 2H5v2a1 1 0 01-2 0V4zm9-1a1 1 0 000 2h2v2a1 1 0 102 0V4a1 1 0 00-1-1h-3zM3 14a1 1 0 102 0v-2h2a1 1 0 100-2H4a1 1 0 00-1 1v3zm11 1a1 1 0 001-1v-3a1 1 0 00-1-1h-3a1 1 0 100 2h2v2a1 1 0 001 1z"
+            clip-rule="evenodd" />
         </svg>
-        <input
-          #barcodeInput
-          type="text"
-          class="scan-input"
-          [(ngModel)]="barcodeValue"
-          (keyup.enter)="onSubmit()"
-          (focus)="onInputFocus()"
-          (blur)="onInputBlur()"
+        <input #barcodeInput type="text" class="scan-input" [(ngModel)]="barcodeValue" (keyup.enter)="onSubmit()"
+          (focus)="onInputFocus()" (blur)="onInputBlur()"
           [placeholder]="mode === 'sell' ? 'Scan barcode to add to cart…' : 'Scan barcode to add stock…'"
-          autocomplete="off" autocorrect="off" autocapitalize="off"
-          spellcheck="false" inputmode="none"
-        />
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none" />
         <button class="process-btn" (click)="onSubmit(); $event.stopPropagation()">SCAN</button>
       </div>
 
@@ -90,17 +89,25 @@
         <button (click)="stopCamera()">✕ Close</button>
       </div>
       <div class="camera-box__video-wrap">
-        <video #videoEl autoplay playsinline muted class="camera-video"></video>
+
+        <zxing-scanner class="camera-video" [device]="currentDevice" [formats]="allowedFormats" [tryHarder]="true"
+          (camerasFound)="onCamerasFound($event)" (scanSuccess)="cameraScanSuccess($event)"
+          (permissionResponse)="onHasPermission($event)">
+        </zxing-scanner>
         <div class="camera-overlay">
           <div class="camera-frame"></div>
           <p>Aim camera at barcode</p>
         </div>
+
       </div>
       <div class="camera-manual">
         <p>If auto-detect fails, type barcode below:</p>
         <div class="camera-input-row">
-          <input type="text" #cameraInput placeholder="Type barcode manually…" (keyup.enter)="onCameraBarcode(cameraInput.value); cameraInput.value=''" />
-          <button (click)="onCameraBarcode(cameraInput.value); cameraInput.value=''">Add</button>
+          <!-- Bind this input to barcodeValue so the camera scan fills it automatically -->
+          <input type="text" #cameraInput [(ngModel)]="barcodeValue" placeholder="Type barcode manually…"
+            (keyup.enter)="onSubmit()" />
+
+          <button (click)="onSubmit()">Add</button>
         </div>
       </div>
     </div>
@@ -128,7 +135,12 @@
     <!-- USB scanner guide -->
     <div class="usb-guide">
       <div class="usb-guide__title">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1v-2H2a1 1 0 110-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"/></svg>
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+          <path d="M13 7H7v6h6V7z" />
+          <path fill-rule="evenodd"
+            d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1v-2H2a1 1 0 110-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z"
+            clip-rule="evenodd" />
+        </svg>
         USB/Bluetooth Scanner Setup
       </div>
       <div class="usb-guide__steps">
@@ -187,15 +199,17 @@
       <div class="payment-row">
         <span class="payment-label">Payment</span>
         <div class="payment-pills">
-          <button *ngFor="let m of paymentMethods"
-                  class="payment-pill"
-                  [class.active]="paymentMethod === m"
-                  (click)="paymentMethod = m">{{ m }}</button>
+          <button *ngFor="let m of paymentMethods" class="payment-pill" [class.active]="paymentMethod === m"
+            (click)="paymentMethod = m">{{ m }}</button>
         </div>
       </div>
 
       <button class="checkout-btn" (click)="checkout()">
-        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0v3H7V4h6zm-5 7a1 1 0 100 2h4a1 1 0 100-2H8z" clip-rule="evenodd"/></svg>
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0v3H7V4h6zm-5 7a1 1 0 100 2h4a1 1 0 100-2H8z"
+            clip-rule="evenodd" />
+        </svg>
         Checkout & Print Receipt
       </button>
     </div>
@@ -219,17 +233,11 @@
 </div>
 
 <!-- New Product Modal -->
-<app-new-product-modal
-  *ngIf="showNewProductModal"
-  [barcodeId]="pendingBarcode"
-  (saved)="onNewProductSaved($event)"
+<app-new-product-modal *ngIf="showNewProductModal" [barcodeId]="pendingBarcode" (saved)="onNewProductSaved($event)"
   (cancelled)="onNewProductCancelled()">
 </app-new-product-modal>
 
 <!-- Receipt Side Panel -->
-<app-receipt-panel
-  *ngIf="showReceipt && completedReceipt"
-  [receipt]="completedReceipt"
-  (closed)="onReceiptClosed()"
+<app-receipt-panel *ngIf="showReceipt && completedReceipt" [receipt]="completedReceipt" (closed)="onReceiptClosed()"
   (newSale)="onNewSale()">
 </app-receipt-panel>
