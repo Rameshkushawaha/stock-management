@@ -241,3 +241,134 @@
 <app-receipt-panel *ngIf="showReceipt && completedReceipt" [receipt]="completedReceipt" (closed)="onReceiptClosed()"
   (newSale)="onNewSale()">
 </app-receipt-panel>
+
+<!-- New Product Registration Popup -->
+<div class="modal-overlay" *ngIf="showNewProductPopup">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>🆕 Register New Product</h2>
+      <button class="close-x" (click)="showNewProductPopup = false">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Barcode (Read-only since it was just scanned) -->
+      <div class="form-group">
+        <label>Barcode</label>
+        <input type="text" [(ngModel)]="newProductData.barcode" readonly class="input-disabled" />
+      </div>
+
+      <!-- Name -->
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" [(ngModel)]="newProductData.name" placeholder="Enter product name" />
+      </div>
+
+      <!-- Category & Brand -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="newProductData.categoryId">
+            <option [value]="null">--select--</option>
+            <option *ngFor="let cat of categoryList" [value]="cat.id">{{ cat.name }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Brand</label>
+          <select [(ngModel)]="newProductData.brandId">
+            <option [value]="null" onclick=getBrandList()>--select--</option>
+            <option *ngFor="let b of brandList" [value]="b.id">{{ b.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Unit Selection -->
+      <div class="form-group">
+        <label>Unit</label>
+        <select [(ngModel)]="newProductData.unitId">
+          <option value="0">--select--</option>
+          <option *ngFor="let u of unitList" [value]="u.id">{{ u.name }}</option>
+        </select>
+      </div>
+
+      <!-- Stock & Tax -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>GST %</label>
+          <input type="number" [(ngModel)]="newProductData.taxPercent" />
+        </div>
+        <div class="form-group">
+          <label>Initial Stock</label>
+          <input type="number" [(ngModel)]="newProductData.initialQty" />
+        </div>
+      </div>
+
+      <!-- Min Stock (From your Prisma model) -->
+      <div class="form-group">
+        <label>Min. Stock Alert (Threshold)</label>
+        <input type="number" [(ngModel)]="newProductData.minStock" />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="showNewProductPopup = false">Cancel</button>
+      <button class="btn-save" [disabled]="!newProductData.name" (click)="saveNewProduct()">
+        Save & Add Stock
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- create new batch modal -->
+
+<div class="modal-overlay" *ngIf="showNewBatchPopup">
+  <div class="modal-content modal-content--batch">
+    <div class="modal-header">
+      <h2>📦 Create Initial Stock Batch</h2>
+      <button class="close-x" (click)="showNewBatchPopup = false">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-info-text">This product exists in the system but has no stock records. Please enter the starting details.</p>
+      
+      <div class="form-group">
+        <label>Barcode</label>
+        <input type="text" [value]="newBatchData.barcode" readonly class="input-disabled" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity</label>
+          <input type="number" [(ngModel)]="newBatchData.qty" />
+        </div>
+        <!-- <div class="form-group">
+          <label>Batch No.</label>
+          <input type="text" [(ngModel)]="newBatchData.batchNo" />
+        </div> -->
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Purchase Price (per unit)</label>
+          <input type="number" [(ngModel)]="newBatchData.purchasePrice" />
+        </div>
+        <div class="form-group">
+          <label>Selling Price (per unit)</label>
+          <input type="number" [(ngModel)]="newBatchData.sellingPrice" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Expiry Date (Optional)</label>
+        <input type="date" [(ngModel)]="newBatchData.expiryDate" />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="showNewBatchPopup = false">Cancel</button>
+      <button class="btn-save btn-save--batch" (click)="saveNewBatch()">
+        Create Batch & Confirm Stock
+      </button>
+    </div>
+  </div>
+</div>

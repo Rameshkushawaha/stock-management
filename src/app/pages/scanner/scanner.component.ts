@@ -66,7 +66,23 @@ export class ScannerComponent implements OnInit, OnDestroy {
   private focusTimer: any;
   private clockInterval: any;
   currentTime = new Date();
+  categoryList: any[] = [];
+  brandList: any[] = [];
+  unitList: any[] = [];
 
+  showNewProductPopup = false;
+  newProductData = {
+    barcode: '',
+    name: '',
+    categoryId: null,
+    brandId: null,
+    unitId: 0,
+    taxPercent: 18.0, // Default from your schema
+    minStock: 10,     // Default from your schema
+    initialQty: 1,
+    purchasePrice: 0,
+    sellingPrice: 0
+  };
   constructor(
     private inventory: InventoryService,
     public auth: AuthService,
@@ -74,6 +90,15 @@ export class ScannerComponent implements OnInit, OnDestroy {
     private router: Router
   ) { }
 
+
+  showNewBatchPopup = false;
+  newBatchData = {
+    barcode: '',
+    qty: 1,
+    purchasePrice: 0,
+    sellingPrice: 0,
+    expiryDate: ''
+  };
   // =========================================================
   // INIT
   // =========================================================
@@ -92,6 +117,9 @@ export class ScannerComponent implements OnInit, OnDestroy {
       this.currentTime = new Date();
     }, 1000);
 
+    this.getCategoryList();
+    this.getBrandList();
+    this.getUnitList();
     setTimeout(() => this.focusInput(), 200);
   }
 
@@ -178,51 +206,122 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
     this.showMsg(`Added: ${result.item.productName}`);
     this.triggerFlash('flash--success');
+
   }
 
   handleAdd(bc: string): void {
+    this.inventory.processInbond(bc).subscribe({
+      next: (res) => {
 
-    const result = this.inventory.processInbound(
-      bc,
-      this.auth.currentUser?.id
-    );
+        console.log('Inbound response:', res);
+        if (res.success) {
+          // Use res.data to access the StockBatch properties
+          const updatedQty = res.data.qtyAvailable;
+          this.triggerFlash('flash--success');
+          this.showMsg(`Stock updated! Current Qty: ${updatedQty}`);
 
-    if (!result) {
-      this.pendingBarcode = bc;
-      this.showNewProductModal = true;
-      return;
-    }
+        } if (res.error.includes('No existing stock batch')) {
+          // Case: Product exists, but needs its FIRST batch
+          console.log('Product exists but no batch found. Opening Batch Creator.');
+          this.openNewBatchModal(bc);
+        }
+        else if (res.error.includes('Product not found')) {
+          // Case: Product doesn't exist at all
+          console.log('Product totally new. Opening Registration.');
+          this.openRegistrationPopup(bc);
+        }
+        this.triggerFlash('flash--success');
 
-    this.lastScannedProduct = result.product;
+        // Reset the input field if necessary
+        this.barcodeValue = '';
+      },
+      error: (err) => {
+        this.showMsg('Connection error. Please try again.');
+        this.triggerFlash('flash--error');
+        console.error('Inbound error:', err);
+      }
+    });
+  }
 
-    this.showMsg(
-      `Stock updated: ${result.product.productName} → ${result.currentStock} units`
-    );
-
-    this.triggerFlash('flash--success');
+  // new Batch Modal
+  // Logic to open this specific modal
+  openNewBatchModal(bc: string) {
+    this.newBatchData = {
+      barcode: bc,
+      qty: 1,
+      purchasePrice: 0,
+      sellingPrice: 0,
+      expiryDate: ''
+    };
+    this.showNewBatchPopup = true;
+  }
+  saveNewBatch(): void {
+    this.inventory.addNewBatch(this.newBatchData).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.showMsg(`Initial stock added for ${this.newBatchData.barcode}!`);
+          this.showNewBatchPopup = false;
+          this.triggerFlash('flash--success');
+          setTimeout(() => this.focusInput(), 100);
+        }
+      },
+      error: (err) => this.showError('Failed to create initial batch')
+    });
   }
 
   // =========================================================
   // NEW PRODUCT
   // =========================================================
-  onNewProductSaved(data: {
-    productData: Omit<Product, 'productId'>;
-    initialStock: number;
-  }): void {
 
-    const { product } = this.inventory.registerNewProduct(
-      data.productData,
-      data.initialStock,
-      this.auth.currentUser?.id
-    );
+  openRegistrationPopup(barcode: string): void {
+    this.newProductData = {
+      name: '',
+      barcode: barcode, // Pre-fill the barcode you just scanned
+      taxPercent: 18,
+      unitId: 0,
+      categoryId: null,
+      brandId: null,
+      minStock: 10,
+      initialQty: 1,
+      purchasePrice: 0,
+      sellingPrice: 0
+    };
+    this.showNewProductPopup = true;
+  }
 
-    this.lastScannedProduct = product;
-    this.showMsg(`Registered: ${product.productName}`);
-    this.showNewProductModal = false;
+  saveNewProduct(): void {
+    // Ensure numeric fields are actually numbers
+    const payload = {
+      ...this.newProductData,
+      categoryId: Number(this.newProductData.categoryId),
+      brandId: Number(this.newProductData.brandId),
+      unitId: Number(this.newProductData.unitId),
+      taxPercent: Number(this.newProductData.taxPercent),
+      initialQty: Number(this.newProductData.initialQty),
+      purchasePrice: Number(this.newProductData.purchasePrice || 0),
+      sellingPrice: Number(this.newProductData.sellingPrice || 0)
+    };
 
-    this.triggerFlash('flash--success');
+    this.inventory.registerNewProduct(payload).subscribe({
+      next: (product) => {
+        this.showNewProductPopup = false;
+        this.triggerFlash('flash--success');
 
-    setTimeout(() => this.focusInput(), 100);
+        // Update UI feedback
+        this.lastScannedProduct = product;
+        this.showMsg(`Successfully registered: ${product.name}`);
+
+        // Reset local input
+        this.barcodeValue = '';
+
+        // Return focus to scanner
+        setTimeout(() => this.focusInput(), 100);
+      },
+      error: (err) => {
+        this.showError(err.message || 'Could not save product');
+        this.triggerFlash('flash--error');
+      }
+    });
   }
 
   onNewProductCancelled(): void {
@@ -268,20 +367,20 @@ export class ScannerComponent implements OnInit, OnDestroy {
   // =========================================================
   // CAMERA SCANNER (FINAL STABLE)
   // =========================================================\
- // Add these to your class properties
-availableDevices: MediaDeviceInfo[] = [];
-currentDevice: MediaDeviceInfo | undefined;
+  // Add these to your class properties
+  availableDevices: MediaDeviceInfo[] = [];
+  currentDevice: MediaDeviceInfo | undefined;
 
-// This method picks the correct camera automatically
-onCamerasFound(devices: MediaDeviceInfo[]): void {
-  this.availableDevices = devices;
-  if (devices && devices.length > 0) {
-    // Priority: 1. Back camera (for mobile) 2. First available (for PC)
-    const backCam = devices.find(d => d.label.toLowerCase().includes('back'));
-    this.currentDevice = backCam || devices[0];
-    console.log('Camera selected:', this.currentDevice.label);
+  // This method picks the correct camera automatically
+  onCamerasFound(devices: MediaDeviceInfo[]): void {
+    this.availableDevices = devices;
+    if (devices && devices.length > 0) {
+      // Priority: 1. Back camera (for mobile) 2. First available (for PC)
+      const backCam = devices.find(d => d.label.toLowerCase().includes('back'));
+      this.currentDevice = backCam || devices[0];
+      console.log('Camera selected:', this.currentDevice.label);
+    }
   }
-}
   // 1. Add this property to your class
   allowedFormats = [
     BarcodeFormat.EAN_13,
@@ -303,23 +402,23 @@ onCamerasFound(devices: MediaDeviceInfo[]): void {
 
   // This is the ONLY function that should handle a successful scan
   cameraScanSuccess(code: string): void {
-  if (!code) return;
+    if (!code) return;
 
-  console.log('Decoded Code:', code); // Check F12 console to see if it sees the number
-  
-  // 1. Fill the search value
-  this.barcodeValue = code;
+    console.log('Decoded Code:', code); // Check F12 console to see if it sees the number
 
-  // 2. Trigger the visual feedback
-  this.triggerFlash('flash--success');
-  this.triggerScanLine();
+    // 1. Fill the search value
+    this.barcodeValue = code;
 
-  // 3. Force a tiny delay so Angular's data-binding catches up
-  setTimeout(() => {
-    this.showCamera = false; // Close the camera
-    this.onSubmit();        // Process the barcode (Add to cart or Stock)
-  }, 100);
-}
+    // 2. Trigger the visual feedback
+    this.triggerFlash('flash--success');
+    this.triggerScanLine();
+
+    // 3. Force a tiny delay so Angular's data-binding catches up
+    setTimeout(() => {
+      this.showCamera = false; // Close the camera
+      this.onSubmit();        // Process the barcode (Add to cart or Stock)
+    }, 100);
+  }
 
   onHasPermission(has: boolean): void {
     if (!has) {
@@ -340,6 +439,44 @@ onCamerasFound(devices: MediaDeviceInfo[]): void {
     this.onSubmit();
   }
 
+  // dropdown
+  getCategoryList() {
+    this.inventory.getCategoryList().subscribe({
+      next: (res) => {
+        console.log('Categories:', res);
+        this.categoryList = res; // Assign to local variable to populate dropdown
+      },
+      error: (err) => {
+        console.error('Failed to load categories:', err);
+      }
+    });
+  }
+
+  getBrandList() {
+    this.inventory.getBrandList().subscribe({
+      next: (res) => {
+        console.log('Brands:', res);
+        this.brandList = res;
+        // You can assign this to a local variable to populate a dropdown
+      },
+      error: (err) => {
+        console.error('Failed to load brands:', err);
+      }
+    });
+  }
+
+  getUnitList() {
+    this.inventory.getUnitList().subscribe({
+      next: (res) => {
+        console.log('Units:', res);
+        this.unitList = res;
+        // You can assign this to a local variable to populate a dropdown
+      },
+      error: (err) => {
+        console.error('Failed to load units:', err);
+      }
+    });
+  }
   // =========================================================
   // UI HELPERS
   // =========================================================

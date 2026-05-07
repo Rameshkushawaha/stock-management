@@ -5,7 +5,7 @@ import {
   Receipt, ReceiptItem, DashboardStats
 } from '../models/models';
 import mockData from '../data/mock-data.json';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { environment } from '../environment/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -92,21 +92,37 @@ export class InventoryService {
     return tx;
   }
 
-  // ─── Inbound ─────────────────────────────────────────────────────────────────
-  processInbound(barcodeId: string, operatorId?: number): { product: Product; currentStock: number } | null {
-    const product = this.getProductByBarcode(barcodeId);
-    if (!product) return null;
-    this.updateStock(product.productId, 1);
-    this.logTransaction(product.productId, 'Inbound', 1, operatorId);
-    return { product, currentStock: this.getInventory(product.productId)?.currentStock ?? 0 };
-  }
+  // // ─── Inbound ─────────────────────────────────────────────────────────────────
+  // processInbound(barcodeId: string, operatorId?: number): { product: Product; currentStock: number } | null {
+  //   const product = this.getProductByBarcode(barcodeId);
+  //   if (!product) return null;
+  //   this.updateStock(product.productId, 1);
+  //   this.logTransaction(product.productId, 'Inbound', 1, operatorId);
+  //   return { product, currentStock: this.getInventory(product.productId)?.currentStock ?? 0 };
+  // }
 
-  registerNewProduct(data: Omit<Product, 'productId'>, qty: number, operatorId?: number): { product: Product; currentStock: number } {
-    const product = this.addProduct(data);
-    this.addInventoryEntry(product.productId, qty);
-    this.logTransaction(product.productId, 'Inbound', qty, operatorId);
-    return { product, currentStock: qty };
-  }
+
+  // registerNewProduct(data: Omit<Product, 'productId'>, qty: number, operatorId?: number): { product: Product; currentStock: number } {
+  //   const product = this.addProduct(data);
+  //   this.addInventoryEntry(product.productId, qty);
+  //   this.logTransaction(product.productId, 'Inbound', qty, operatorId);
+  //   return { product, currentStock: qty };
+  // }
+
+  registerNewProduct(productData: any): Observable<any> {
+  const token = sessionStorage.getItem('stocksys_token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  const url = `${this.API_URL}products/addProduct`;
+
+  return this.http.post<any>(url, productData, { headers }).pipe(
+    map(response => {
+      if (response.success) {
+        return response.data; // This returns the full object you saw in Postman
+      }
+      throw new Error(response.message || 'Registration failed');
+    })
+  );
+}
 
   // ─── Cart / Outbound ─────────────────────────────────────────────────────────
   addToCart(barcodeId: string): { item: ReceiptItem; isLowStock: boolean } | { error: string } {
@@ -227,5 +243,80 @@ getDemandReport(days: number = 30): Observable<DemandItem[]> {
   );
   
 }
+
+processInbond(barcodeId: string): Observable<any> {
+  const token = sessionStorage.getItem('stocksys_token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+  // Create formal HttpParams
+  const queryParams = new HttpParams()
+    .set('barcode', barcodeId)
+    .set('qty', '1');
+
+  const url = `${this.API_URL}products/addStock`;
+
+  // Second argument is the BODY (empty {}), third argument is the OPTIONS (params)
+ return this.http.post<any>(url, {}, { headers, params: queryParams }).pipe(
+    map(response => {
+      // Check for the 'success' flag from your backend JSON
+      if (response) {
+        return response
+         
+      }
+      return { error: response.message || 'Failed to process inbound' };
+    })
+  );
+}
+
+// 1. New API for adding a fresh batch
+addNewBatch(payload: any): Observable<any> {
+  const token = sessionStorage.getItem('stocksys_token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  return this.http.post<any>(`${this.API_URL}products/addNewBatchStock`, payload, { headers });
+}
+
+getCategoryList(): Observable<any[]> {
+  const token = sessionStorage.getItem('stocksys_token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  const url = `${this.API_URL}products/categories`;
+  return this.http.get<any>(url, { headers }).pipe(
+    map(response => {
+      if (response.success) {
+        return response.data; // Assuming data is the array of categories
+      }
+      return [];
+    })
+  );
+}
+
+getBrandList(): Observable<any[]> {
+  const token = sessionStorage.getItem('stocksys_token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  const url = `${this.API_URL}products/brands`;
+  return this.http.get<any>(url, { headers }).pipe(
+    map(response => {
+      if (response.success) {
+        return response.data; // Assuming data is the array of brands
+      }
+      return [];
+    })
+  );
+
+}
+
+getUnitList(): Observable<any[]> {
+  const token = sessionStorage.getItem('stocksys_token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  const url = `${this.API_URL}products/units`;
+  return this.http.get<any>(url, { headers }).pipe(
+    map(response => {
+      if (response.success) {
+        return response.data; // Assuming data is the array of units
+      }
+      return [];
+    })
+  );
+}
+
 }
 
