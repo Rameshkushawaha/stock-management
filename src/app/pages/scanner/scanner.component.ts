@@ -193,19 +193,40 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
   handleSell(bc: string): void {
 
-    const result = this.inventory.addToCart(bc);
+    // const result = this.inventory.addToCart(bc);
 
-    if ('error' in result) {
-      this.showError(result.error);
-      this.triggerFlash('flash--error');
-      return;
-    }
+    // if ('error' in result) {
+    //   this.showError(result.error);
+    //   this.triggerFlash('flash--error');
+    //   return;
+    // }
 
-    this.lastScannedProduct = this.inventory.getProductByBarcode(bc) ?? null;
-    this.isLowStock = result.isLowStock;
+    // this.lastScannedProduct = this.inventory.getProductByBarcode(bc) ?? null;
+    // this.isLowStock = result.isLowStock;
 
-    this.showMsg(`Added: ${result.item.productName}`);
-    this.triggerFlash('flash--success');
+    // this.showMsg(`Added: ${result.item.productName}`);
+    // this.triggerFlash('flash--success');
+
+    const res = this.inventory.addToCart(bc).subscribe({
+      next: (res: any) => {
+        console.log('Add to cart response:', res);
+        
+        // SUCCESS CASE
+        if (res.item) {
+          this.triggerFlash('flash--success');
+          this.showMsg(`Added to cart: ${res.item.productName}`);
+        } 
+        // ERROR HANDLING & POPUP TRIGGERING
+        else if (res.error) {
+          this.showError(res.error.error);
+        }
+      },
+      error: (err) => {
+        this.showError('Connection error. Please try again.');
+        this.triggerFlash('flash--error');
+      }
+    });
+   
 
   }
 
@@ -340,18 +361,36 @@ export class ScannerComponent implements OnInit, OnDestroy {
     this.inventory.clearCart();
   }
 
+  // checkout(): void {
+
+  //   if (this.cartItems.length === 0) return;
+
+  //   this.completedReceipt = this.inventory.buildReceipt(
+  //     this.auth.currentUser?.name ?? 'Staff',
+  //     this.paymentMethod
+  //   );
+
+  //   this.showReceipt = true;
+  // }
+
   checkout(): void {
+  if (this.cartItems.length === 0) return;
 
-    if (this.cartItems.length === 0) return;
-
-    this.completedReceipt = this.inventory.buildReceipt(
-      this.auth.currentUser?.name ?? 'Staff',
-      this.paymentMethod
-    );
-
-    this.showReceipt = true;
-  }
-
+  this.inventory.checkout(
+    this.auth.currentUser?.name ?? 'Staff',
+    this.paymentMethod
+  ).subscribe({
+    next: (receipt) => {
+      this.completedReceipt = receipt;
+      this.showReceipt = true;
+      // Optional: Show success message
+    },
+    error: (err) => {
+      console.error('Checkout error:', err);
+      // Optional: Show error toast/notification to user
+    }
+  });
+}
   onReceiptClosed(): void {
     this.showReceipt = false;
     this.completedReceipt = null;
@@ -515,10 +554,13 @@ export class ScannerComponent implements OnInit, OnDestroy {
   // =========================================================
   // COMPUTED
   // =========================================================
-  get cartTotal(): number {
-    return this.cartItems.reduce((s, i) => s + i.total, 0);
-  }
+  // get cartTotal(): number {
+  //   return this.cartItems.reduce((s, i) => s + i.total, 0);
+  // }
 
+  get cartTotal(): number {
+    return this.cartItems.reduce((s, i) => s + Number(i.total || 0), 0);
+  }
   get cartCount(): number {
     return this.cartItems.reduce((s, i) => s + i.quantity, 0);
   }

@@ -174,7 +174,7 @@
         </div>
         <div class="cart-item__qty-price">
           <span class="cart-item__qty">× {{ item.quantity }}</span>
-          <span class="cart-item__price">{{ formatPrice(item.total) }}</span>
+          <span class="cart-item__price">{{ formatPrice(item.unitPrice) }}</span>
         </div>
         <button class="cart-item__remove" (click)="removeFromCart(item.barcodeId)">✕</button>
       </div>

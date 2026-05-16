@@ -92,23 +92,6 @@ export class InventoryService {
     return tx;
   }
 
-  // // ─── Inbound ─────────────────────────────────────────────────────────────────
-  // processInbound(barcodeId: string, operatorId?: number): { product: Product; currentStock: number } | null {
-  //   const product = this.getProductByBarcode(barcodeId);
-  //   if (!product) return null;
-  //   this.updateStock(product.productId, 1);
-  //   this.logTransaction(product.productId, 'Inbound', 1, operatorId);
-  //   return { product, currentStock: this.getInventory(product.productId)?.currentStock ?? 0 };
-  // }
-
-
-  // registerNewProduct(data: Omit<Product, 'productId'>, qty: number, operatorId?: number): { product: Product; currentStock: number } {
-  //   const product = this.addProduct(data);
-  //   this.addInventoryEntry(product.productId, qty);
-  //   this.logTransaction(product.productId, 'Inbound', qty, operatorId);
-  //   return { product, currentStock: qty };
-  // }
-
   registerNewProduct(productData: any): Observable<any> {
   const token = sessionStorage.getItem('stocksys_token');
   const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
@@ -125,7 +108,7 @@ export class InventoryService {
 }
 
   // ─── Cart / Outbound ─────────────────────────────────────────────────────────
-  addToCart(barcodeId: string): { item: ReceiptItem; isLowStock: boolean } | { error: string } {
+  addToCart1(barcodeId: string): { item: ReceiptItem; isLowStock: boolean } | { error: string } {
     const product = this.getProductByBarcode(barcodeId);
     if (!product) return { error: 'Product not found: ' + barcodeId };
     const inv = this.getInventory(product.productId);
@@ -147,6 +130,35 @@ export class InventoryService {
     return { item: cart.find(i => i.barcodeId === product.barcodeId)!, isLowStock };
   }
 
+  // addto cart with API call
+  addToCart(barcodeId: string): Observable<{ item: ReceiptItem; isLowStock: boolean } | { error: string }> {
+    
+    const token = sessionStorage.getItem('stocksys_token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const url = `${this.API_URL}sales/outbounditem?barcode=${barcodeId}&qty=1`;
+
+    return this.http.post<any>(url, {}, { headers }).pipe(
+      map(response => {
+        if (response.success) {
+          const inv = this.getInventory(response.data.product.id);
+          const cart = [...this.cart];
+          const existing = cart.find(i => i.barcodeId === response.data.product.barcode);
+          if (existing) {
+            existing.quantity += 1;
+            existing.total = existing.quantity * existing.unitPrice;
+          } else {
+            const unitPrice = Number(response.data.batch.sellingPrice );
+            cart.push({ productName: response.data.product.name, barcodeId: response.data.product.barcode, quantity: 1, unitPrice: response.data.batch.sellingPrice, total: response.data.batch.sellingPrice });
+          }
+          this.cartSubject.next(cart);
+          const isLowStock = inv ? (inv.currentStock - 1) < 10 : false;
+          return { item: cart.find(i => i.barcodeId === response.data.product.barcode)!, isLowStock };
+        }
+        return { error: response || 'Failed to add to cart' };
+      })
+    );
+  }
+ 
   removeFromCart(barcodeId: string): void {
     const cart = this.cart.filter(i => i.barcodeId !== barcodeId);
     // restore stock for removed items
@@ -174,6 +186,48 @@ export class InventoryService {
     this.clearCart();
     return receipt;
   }
+
+  // checkout with API call
+  checkout(operatorName: string, paymentMethod: string): Observable<Receipt> {
+  const token = sessionStorage.getItem('stocksys_token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  const url = `${this.API_URL}sales/checkout`;
+  
+  // Align payload keys with your backend (barcodeId vs barcode)
+  const payload = { 
+    items: this.cart.map(i => ({ barcodeId: i.barcodeId, quantity: i.quantity })), 
+    paymentMode: paymentMethod 
+  };
+
+  return this.http.post<any>(url, payload, { headers }).pipe(
+    map(response => {
+      if (response.success) {
+        const d = response.data; // Alias for cleaner mapping
+        
+        const receipt: Receipt = {
+          receiptId: d.invoiceNo, // API uses invoiceNo
+          items: d.items.map((i: any) => ({
+            productName: i.productName,
+            barcodeId: i.barcodeSnapshot, // API uses barcodeSnapshot
+            quantity: i.qty,              // API uses qty
+            unitPrice: Number(i.rate),    // API uses rate (string)
+            total: Number(i.lineTotal)    // API uses lineTotal (string)
+          })),
+          subtotal: Number(d.subtotal),
+          tax: Number(d.taxAmount),       // API uses taxAmount
+          total: Number(d.grandTotal),    // API uses grandTotal
+          timestamp: new Date(d.saleDate), // API uses saleDate
+          operatorName: d.operator?.name || operatorName,
+          paymentMethod: d.paymentMode     // API uses paymentMode
+        };
+        
+        this.clearCart();
+        return receipt;
+      }
+      throw new Error(response.error || 'Checkout failed');
+    })
+  );
+}
 
   private readonly API_URL = environment.apiUrl;
 

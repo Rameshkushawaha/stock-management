@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { DashboardStats, DemandItem, Product } from '../../models/models';
+import { BarcodeFormat } from '@zxing/library';
 
 @Component({
   selector: 'app-dashboard',
@@ -26,7 +27,7 @@ export class DashboardComponent implements OnInit {
   scannerFocusLost = false;
   scanLineActive = false;
   flashClass = '';
-
+   showCamera = false;
   // Feedback
   private msgTimer: any;
   lastMessage = '';
@@ -113,12 +114,26 @@ quickScan(): void {
   if (!bc) return;
 
   if (this.quickScanMode === 'sell') {
-    const res = this.inventory.addToCart(bc);
-    if ('error' in res) { 
-      this.showError(res.error); 
-    } else { 
-      this.showMsg(`Added ${res.item.productName} to cart`); 
-    }
+    const res = this.inventory.addToCart(bc).subscribe({
+      next: (res: any) => {
+        console.log('Add to cart response:', res);
+        
+        // SUCCESS CASE
+        if (res.item) {
+          this.triggerFlash('flash--success');
+          this.showMsg(`Added to cart: ${res.item.productName}`);
+        } 
+        // ERROR HANDLING & POPUP TRIGGERING
+        else if (res.error) {
+          this.showError(res.error.error);
+        }
+      },
+      error: (err) => {
+        this.showError('Connection error. Please try again.');
+        this.triggerFlash('flash--error');
+      }
+    });
+   
   } else {
     this.inventory.processInbond(bc).subscribe({
       next: (res: any) => {
@@ -307,6 +322,81 @@ get formattedTodayRevenue(): string {
     });
   }
 
+   // =========================================================
+    // CAMERA SCANNER (FINAL STABLE)
+    // =========================================================\
+    // Add these to your class properties
+    availableDevices: MediaDeviceInfo[] = [];
+    currentDevice: MediaDeviceInfo | undefined;
+  
+    // This method picks the correct camera automatically
+    onCamerasFound(devices: MediaDeviceInfo[]): void {
+      this.availableDevices = devices;
+      if (devices && devices.length > 0) {
+        // Priority: 1. Back camera (for mobile) 2. First available (for PC)
+        const backCam = devices.find(d => d.label.toLowerCase().includes('back'));
+        this.currentDevice = backCam || devices[0];
+        console.log('Camera selected:', this.currentDevice.label);
+      }
+    }
+    // 1. Add this property to your class
+    allowedFormats = [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.QR_CODE
+    ];
+  
+    toggleCamera(): void {
+      this.showCamera = !this.showCamera;
+      // When we close the camera, we ensure focus returns to the USB input
+      if (!this.showCamera) {
+        setTimeout(() => this.focusInput(), 100);
+      }
+    }
+  
+    // This is the ONLY function that should handle a successful scan
+    cameraScanSuccess(code: string): void {
+      if (!code) return;
+  
+      console.log('Decoded Code:', code); // Check F12 console to see if it sees the number
+  
+      // 1. Fill the search value
+      this.quickScanBarcode = code;
+  
+      // 2. Trigger the visual feedback
+      this.triggerFlash('flash--success');
+      this.triggerScanLine();
+  
+      // 3. Force a tiny delay so Angular's data-binding catches up
+      setTimeout(() => {
+        this.showCamera = false; // Close the camera
+        this.quickScan();        // Process the barcode (Add to cart or Stock)
+      }, 100);
+    }
+  
+    onHasPermission(has: boolean): void {
+      if (!has) {
+        this.showError('Camera permission was denied.');
+      } else {
+        this.showMsg('Camera ready - aim at barcode');
+      }
+    }
+  
+    stopCamera(): void {
+      this.showCamera = false;
+      setTimeout(() => this.focusInput(), 100);
+    }
+  
+    // Manual add from camera panel input
+    onCameraBarcode(bc: string): void {
+      this.quickScanBarcode = bc;
+      this.quickScan();
+    }
+  
   // =========================================================
   // UI HELPERS
   // =========================================================
